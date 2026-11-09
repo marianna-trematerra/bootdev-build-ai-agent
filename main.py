@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from prompts import system_prompt
 from call_function import available_functions, call_function
-import json
+import sys
 
 
 load_dotenv()
@@ -28,37 +28,46 @@ messages = [
     {"role": "user", "content": args.user_prompt},
 ]
 
-response = client.chat.completions.create(
-    model="openrouter/free",
-    messages=messages,
-    temperature=0,
-    tools=available_functions
-)
-
-if response.usage is None:
-        raise RuntimeError("No usage property.")
-
-prompt_tokens = response.usage.prompt_tokens
-completion_tokens = response.usage.completion_tokens
-
-if args.verbose:
-    print(f"User prompt: {args.user_prompt}")
-    print(f"Prompt tokens: {prompt_tokens}")
-    print(f"Response tokens: {completion_tokens}")
+for _ in range(20):
     
-message = response.choices[0].message
+    response = client.chat.completions.create(
+        model="openrouter/free",
+        messages=messages,
+        temperature=0,
+        tools=available_functions
+    )
 
-if message.tool_calls:
-    for tool_call in message.tool_calls:
-        result_message = call_function(tool_call, args.verbose)
-    
-        if not result_message['content']:
-            raise RuntimeError(
-                f"Function {tool_call.function.name} returned empty content."
-            )
-            
-        if args.verbose:
-                print(f"-> {result_message['content']}")
+    if response.usage is None:
+            raise RuntimeError("No usage property.")
+
+    prompt_tokens = response.usage.prompt_tokens
+    completion_tokens = response.usage.completion_tokens
+
+    if args.verbose:
+        print(f"User prompt: {args.user_prompt}")
+        print(f"Prompt tokens: {prompt_tokens}")
+        print(f"Response tokens: {completion_tokens}")
+        
+    message = response.choices[0].message
+    messages.append(message)
+
+    if message.tool_calls:
+        for tool_call in message.tool_calls:
+            result_message = call_function(tool_call, args.verbose)
+            messages.append(result_message)
+        
+            if not result_message['content']:
+                raise RuntimeError(
+                    f"Function {tool_call.function.name} returned empty content."
+                )
+                
+            if args.verbose:
+                    print(f"-> {result_message['content']}")
+
+    else:
+        print(f"Response: {message.content}")
+        break
 
 else:
-    print(f"Response: {message.content}")
+    sys.exit(1)
+    
