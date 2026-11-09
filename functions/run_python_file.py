@@ -47,3 +47,29 @@ def run_python_file(
         
     except Exception as e:
         return f"Error: executing Python file: {e}"
+    
+    
+schema_run_python_file = {
+    "type": "function",
+    "function": {
+        "name": "run_python_file",
+        "description": "Runs a Python file located relative to the working directory, using the working directory as the current directory, and returns its output. The result includes STDOUT and STDERR, plus the exit code if the script fails. Execution is stopped after 30 seconds. Returns an error message if the file doesn't exist, isn't a .py file or is outside the working directory.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                    "description": "Path of the file to run, relative to the working directory",
+                },
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                    },
+                    "description": "Optional list of command-line arguments to pass to the script, each as a separate string (for example, ['3 + 5'])",
+                },
+            },
+            "required": ["file_path"],
+        },
+    },
+}

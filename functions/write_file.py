@@ -24,3 +24,25 @@ def write_file(working_directory: str, file_path: str, content: str) -> str:
     
     except Exception as e:
         return f"Error: {e}"
+
+schema_write_file = {
+    "type": "function",
+    "function": {
+        "name": "write_file",
+        "description": "Writes text content to a file at the given path, relative to the working directory. Creates the file, and any missing parent directories, if they don't exist. If the file already exists, its contents are completely overwritten. Returns an error message if the path points to a directory or falls outside the working directory.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                    "description": "Path of the file to write, relative to the working directory",
+                },
+                "content": {
+                    "type": "string",
+                    "description": "The full text to write to the file. This replaces any existing contents.",
+                },
+            },
+            "required": ["file_path", "content"],
+        },
+    },
+}
